@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS}%thread%level%logger%line - %msg%n</pattern>
+        </encoder>
+        <file>${LOG_FILE}.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- daily rollover inferred from the file name -->
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+            <maxFileSize>${LOG_FILE_MAX_SIZE:-10MB}</maxFileSize>
+            <maxHistory>${LOG_FILE_MAX_HISTORY:-20}</maxHistory>
+            <totalSizeCap>${LOG_TOTAL_SIZE_CAP:-500MB}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+</included>

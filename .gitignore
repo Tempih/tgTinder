@@ -1,0 +1,5 @@
+.idea/
+*.png
+.DS_store
+target/
+logs/

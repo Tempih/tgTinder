@@ -1,0 +1,6 @@
+### IntelliJ IDEA ###
+.idea/
+*.png
+.DS_store
+target/
+logs/

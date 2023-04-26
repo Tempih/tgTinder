@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <property name="LOG_FILE"
+              value="serverForTgTinder/logs/springLog}" />
+
+    <property name="LOG_FILE_MAX_SIZE" value="5MB" />
+    <property name="LOG_TOTAL_SIZE_CAP" value="50MB" />
+    <property name="LOG_FILE_MAX_HISTORY" value="20" />
+
+    <include
+            resource="logging/file-appender.xml" />
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+    </root>
+    <root level="DEBUG">
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
