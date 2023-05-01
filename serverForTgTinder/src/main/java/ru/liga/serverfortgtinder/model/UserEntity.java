@@ -1,11 +1,10 @@
 package ru.liga.serverfortgtinder.model;
 
-import javax.validation.constraints.NotBlank;
 import lombok.*;
 import ru.liga.serverfortgtinder.service.PhotoService;
 import ru.liga.serverfortgtinder.service.WordService;
 
-import java.io.IOException;
+import javax.validation.constraints.NotBlank;
 import java.util.UUID;
 
 @Data

@@ -1,7 +1,5 @@
 package ru.liga.serverfortgtinder.controller;
 
-import javax.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +9,7 @@ import ru.liga.serverfortgtinder.model.UserEntity;
 import ru.liga.serverfortgtinder.model.UserLikeEntity;
 import ru.liga.serverfortgtinder.service.TinderService;
 
+import javax.validation.Valid;
 import java.util.List;
 @Slf4j
 @RestController

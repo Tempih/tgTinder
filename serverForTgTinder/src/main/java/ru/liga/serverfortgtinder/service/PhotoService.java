@@ -3,6 +3,8 @@ package ru.liga.serverfortgtinder.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.liga.serverfortgtinder.exceptions.IncorrectFontSizeException;
+import ru.liga.serverfortgtinder.exceptions.IncorrectPhotoException;
 import ru.liga.serverfortgtinder.utils.Wrapper;
 
 import javax.imageio.ImageIO;
@@ -10,10 +12,12 @@ import java.awt.*;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.AttributedString;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.round;
 @Slf4j
@@ -37,27 +41,15 @@ public class PhotoService {
     private static final String PHOTO_FORMAT = "png";
 
     public String signImageAdaptBasedOnImage(String header, String description){
-        log.debug("Создаем InputStream для получения заднего фона для фото по пути {}", BACKGROUND_PATH);
-        InputStream is = PhotoService.class.getResourceAsStream(BACKGROUND_PATH);
-        BufferedImage image;
-        try {
-            log.debug("Создаем фото из заднего фона");
-            image = ImageIO.read(is);
-            is.close();
-            log.debug("Закрываем InputStream");
-        } catch (IOException e) {
-            throw new RuntimeException(e); //todo ошибку для фото
-        }
+
+        BufferedImage image = getBackgroundPhoto();
+
         List<String> headerList = new ArrayList<>();
         headerList.add(header.concat(COMMA));
-        String maxLengthHeaderWord = Arrays.stream(header.split(SPACE))
-                .max(Comparator.comparingInt(String::length))
-                .orElse(null);
+        String maxLengthHeaderWord = getMaxLengthWord(header);
         log.debug("Получаем самое длинное слово для заголовка: {}", maxLengthHeaderWord);
 
-        String maxLengthDescriptionWord = Arrays.stream(description.split(SPACE))
-                .max(Comparator.comparingInt(String::length))
-                .orElse(null);
+        String maxLengthDescriptionWord = getMaxLengthWord(description);
         log.debug("Получаем самое длинное слово для описания: {}", maxLengthDescriptionWord);
 
         Graphics g = image.getGraphics();
@@ -68,7 +60,7 @@ public class PhotoService {
         try {
             headerFont = createFontToFit(new Font(FONT, Font.BOLD, (image.getWidth() - X_MARGE * X_COUNT_MARGE) / maxLengthHeaderWord.length()), headerList.size(), maxLengthHeaderWord, image.getHeight() - Y_MARGE * X_COUNT_MARGE, image.getWidth() - X_MARGE_HEADER, image);
         } catch (IOException e) {
-            throw new RuntimeException(e); //todo ошибку для  изменения шрифта
+            throw new IncorrectFontSizeException();
         }
         log.debug("Получили шрифт для заголовок размером {}", headerFont.getSize());
         FontMetrics metricsHeader = g.getFontMetrics(headerFont);
@@ -98,7 +90,7 @@ public class PhotoService {
             try {
                 newfont = createFontToFit(font, descriptionList.size(), maxLengthDescriptionWord, image.getHeight() - metricsHeader.getHeight() - X_MARGE * (descriptionList.size() - ONE) - X_MARGE * Y_COUNT_MARGE, image.getWidth() -  X_MARGE * X_COUNT_MARGE, image);
             } catch (IOException e) {
-                throw new RuntimeException(e); //todo ошибку для  изменения шрифта
+                throw new IncorrectFontSizeException();
             }
             log.debug("Размер старого шрифта {}. Размер нового шрифта {}", font.getSize(), newfont.getSize());
             if (font.getSize() == newfont.getSize() || font.getSize() - ONE == newfont.getSize()) {
@@ -109,18 +101,8 @@ public class PhotoService {
             metricsDescription = g.getFontMetrics(font);
         }
         Iterator descriptionIterator = descriptionList.iterator();
-        int positionDescriptionX = X_START_POSITION;
         int positionDescriptionY = metricsDescription.getHeight() + metricsHeader.getHeight() + Y_MARGE * Y_COUNT_MARGE;
-        while (descriptionIterator.hasNext()) {
-            String descriptionText = (String) descriptionIterator.next();
-            log.debug("Размещаем на фото строку описания: {}", descriptionText);
-            AttributedString attributedDescriptionText = new AttributedString(descriptionText);
-            attributedDescriptionText.addAttribute(TextAttribute.FONT, font);
-            attributedDescriptionText.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
-
-            g.drawString(attributedDescriptionText.getIterator(), positionDescriptionX, positionDescriptionY);
-            positionDescriptionY += metricsDescription.getHeight();
-        }
+        placeTextToImage(descriptionIterator, X_START_POSITION, positionDescriptionY, metricsDescription, g, font);
 
 //        OutputStream os = new FileOutputStream("example.png");
 //
@@ -165,5 +147,38 @@ public class PhotoService {
         return newFont;
     }
 
+    private BufferedImage getBackgroundPhoto(){
+        log.debug("Создаем InputStream для получения заднего фона для фото по пути {}", BACKGROUND_PATH);
+        InputStream is = PhotoService.class.getResourceAsStream(BACKGROUND_PATH);
+        BufferedImage image;
+        try {
+            log.debug("Создаем фото из заднего фона");
+            image = ImageIO.read(is);
+            is.close();
+            log.debug("Закрываем InputStream");
+        } catch (IOException e) {
+            throw new IncorrectPhotoException();
+        }
+        return image;
+    }
+
+    private String getMaxLengthWord(String text){
+        return Arrays.stream(text.split(SPACE))
+                .max(Comparator.comparingInt(String::length))
+                .orElse(null);
+    }
+
+    private void placeTextToImage(Iterator descriptionIterator, int positionDescriptionX, int positionDescriptionY, FontMetrics metricsDescription, Graphics g, Font font){
+        while (descriptionIterator.hasNext()) {
+            String descriptionText = (String) descriptionIterator.next();
+            log.debug("Размещаем на фото строку описания: {}", descriptionText);
+            AttributedString attributedDescriptionText = new AttributedString(descriptionText);
+            attributedDescriptionText.addAttribute(TextAttribute.FONT, font);
+            attributedDescriptionText.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
+
+            g.drawString(attributedDescriptionText.getIterator(), positionDescriptionX, positionDescriptionY);
+            positionDescriptionY += metricsDescription.getHeight();
+        }
+    }
 
 }
