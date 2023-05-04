@@ -1,5 +1,6 @@
 package ru.liga.serverfortgtinder.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,9 @@ import java.util.*;
 import static java.lang.Math.round;
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PhotoService {
-    @Autowired
-    private Wrapper wrapper;
+    private final Wrapper wrapper;
 
     private static final String BACKGROUND_PATH = "/background/prerev-background.jpg";
     private static final String COMMA = ",";
@@ -104,9 +105,6 @@ public class PhotoService {
         int positionDescriptionY = metricsDescription.getHeight() + metricsHeader.getHeight() + Y_MARGE * Y_COUNT_MARGE;
         placeTextToImage(descriptionIterator, X_START_POSITION, positionDescriptionY, metricsDescription, g, font);
 
-//        OutputStream os = new FileOutputStream("example.png");
-//
-//        ImageIO.write(image, "png", os);
         return encodeToString(image, PHOTO_FORMAT);
 
 

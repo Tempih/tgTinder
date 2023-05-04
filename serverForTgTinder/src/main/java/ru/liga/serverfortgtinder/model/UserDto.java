@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 public class UserDto {
         String userId;
         String userIdProfile;
-        Long chatId;
+        Integer chatId;
         @NotBlank
         String gender;
         @NotBlank

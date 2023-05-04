@@ -1,5 +1,6 @@
 package ru.liga.serverfortgtinder.controller;
 
+import liquibase.pro.packaged.S;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,54 +15,53 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/tinder")
+@RequestMapping("/api/v1/tinder")
 public class TinderController {
 
-    @Autowired
-    TinderService tinderService;
+    private final TinderService tinderService;
 
-    @GetMapping("{userid}/{chatId}/{currentProfileId}/next")
-    public UserDto giveNextProfile(@PathVariable Long chatId, @PathVariable String userid, @PathVariable Long currentProfileId) {
-        log.info("Получен запрос на получение следующего профиля от пользователя {} в чате {}. Id текущего пользователя {}", userid, chatId, currentProfileId);
-        return tinderService.getNextProfile(chatId, userid, currentProfileId);
+    @GetMapping("{userId}/{chatId}/{currentProfileId}/next")
+    public UserDto giveNextProfile(@PathVariable Integer chatId, @PathVariable String userId, @PathVariable Integer currentProfileId) {
+        log.info("Получен запрос на получение следующего профиля от пользователя {} в чате {}. Id текущего пользователя {}", userId, chatId, currentProfileId);
+        return tinderService.getNextProfile(chatId, userId, currentProfileId);
     }
 
-    @GetMapping("{userid}/{chatId}/{currentProfileId}/previously")
-    public UserDto givePreviouslyProfile(@PathVariable Long chatId, @PathVariable String userid, @PathVariable Long currentProfileId) {
-        log.info("Получен запрос на получение преведущего профиля от пользователя {} в чате {}. Id текущего пользователя {}",userid, chatId, currentProfileId);
-        return tinderService.getPreviouslyProfile(chatId, userid, currentProfileId);
+    @GetMapping("{userId}/{chatId}/{currentProfileId}/previously")
+    public UserDto givePreviouslyProfile(@PathVariable Integer chatId, @PathVariable String userId, @PathVariable Integer currentProfileId) {
+        log.info("Получен запрос на получение преведущего профиля от пользователя {} в чате {}. Id текущего пользователя {}", userId, chatId, currentProfileId);
+        return tinderService.getPreviouslyProfile(chatId, userId, currentProfileId);
     }
 
-    @GetMapping("{userid}/profile")
-    public UserDto giveUserInfo(@PathVariable String userid) {
-        log.info("Получен запрос на получение профиля пользователя {}", userid);
-        return tinderService.getUserInfo(userid);
+    @GetMapping("{userId}/profile")
+    public UserDto giveUserInfo(@PathVariable String userId) {
+        log.info("Получен запрос на получение профиля пользователя {}", userId);
+        return tinderService.getUserInfo(userId);
     }
 
-    @GetMapping("/{chatId}")
-    public UserDto giveUserId(@PathVariable Long chatId) {
+    @GetMapping("{chatId}")
+    public UserDto giveUserId(@PathVariable Integer chatId) {
         log.info("Получен запрос на получение userId для чата {}", chatId);
         return tinderService.getUserId(chatId);
     }
 
-    @GetMapping("/{userid}/likes")
-    public List<UserDto> givePreviouslyProfile(@PathVariable String userid) {
-        log.info("Получен запрос на получение лайков для пользователя {}", userid);
-        return tinderService.getLikesForUser(userid);
+    @GetMapping("{userId}/likes")
+    public List<UserDto> givePreviouslyProfile(@PathVariable String userId) {
+        log.info("Получен запрос на получение лайков для пользователя {}", userId);
+        return tinderService.getLikesForUser(userId);
     }
-    @PostMapping("/action/like/")
-    public int like(@Valid @RequestBody UserLikeEntity userLikeEntity) {
+    @PostMapping("action/like")
+    public String like(@Valid @RequestBody UserLikeEntity userLikeEntity) {
         log.info("Получен запрос на постановку лайка от пользователя {} для пользователя {}", userLikeEntity.getUserId(), userLikeEntity.getLikedUserId());
         return tinderService.likeUser(userLikeEntity);
     }
     @PostMapping
-    public int create(@Valid @RequestBody UserEntity userEntity) {
+    public String create(@Valid @RequestBody UserEntity userEntity) {
         log.info("Получен запрос на создание профиля от чата {}", userEntity.getChatId());
         return tinderService.addUser(userEntity);
     }
 
-    @PutMapping("/{userid}/")
-    public int updateUserInfo(@RequestBody UserEntity userEntity) {
+    @PutMapping("{userId}")
+    public String updateUserInfo(@Valid @RequestBody UserEntity userEntity) {
         log.info("Получен запрос на изменение профиля от пользователя {}", userEntity.getUserId());
         return tinderService.updateUserInfo(userEntity);
     }
